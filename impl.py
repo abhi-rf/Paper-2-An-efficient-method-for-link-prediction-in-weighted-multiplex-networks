@@ -32,6 +32,7 @@ def create_graphs():
     for i in range(5):
         G = add_nodes()
         graphs.append(G)
+        
       
     with open(edge_path,'r') as f:
         for line in f:
@@ -51,17 +52,16 @@ def create_graphs():
                 elif(i==3):
                     wt = int(info)
                 i+=1
-        graphs[k].add_edge(u,v,weight = wt) 
-        
-        return graphs
-                    
-                    
+            graphs[k].add_edge(u,v,weight = wt) 
+       
+    return graphs
+                                   
 
 
 if __name__ == "__main__":
     
     empty_graph = add_nodes()
     graphs = create_graphs()
-    print(len(graphs[0].edges()))
+    print(len(graphs[3].edges()))
     
     
