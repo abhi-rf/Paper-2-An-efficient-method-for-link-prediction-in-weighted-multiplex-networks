@@ -1,4 +1,3 @@
-nodeID nodeLabel
 1 U102
 2 U139
 3 U33
