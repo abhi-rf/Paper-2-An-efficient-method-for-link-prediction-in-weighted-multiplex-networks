@@ -27,9 +27,10 @@ def add_nodes():
     
     return G
                 
-def create_graphs(nodes):
+def create_graphs():
     graphs = []
     for i in range(5):
+        G = add_nodes()
         graphs.append(G)
       
     with open(edge_path,'r') as f:
@@ -60,8 +61,7 @@ def create_graphs(nodes):
 if __name__ == "__main__":
     
     empty_graph = add_nodes()
-    graphs = create_graphs(nodes)
-    nx.drawing.draw(graphs[0])
-    #print(graphs[0].edges())
+    graphs = create_graphs()
+    print(len(graphs[0].edges()))
     
     
