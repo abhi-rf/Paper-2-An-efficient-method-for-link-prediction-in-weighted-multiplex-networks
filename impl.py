@@ -55,8 +55,15 @@ def create_graphs():
             graphs[k].add_edge(u,v,weight = wt) 
        
     return graphs
-                                   
+            
 
+#Algorithm 1                       
+def assign_likelihood(graphs,target):
+    predictor = []
+    for i in range(len(graphs)):
+        if(i!=target):
+            predictor.append(graphs[i])
+    
 
 if __name__ == "__main__":
     
