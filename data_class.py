@@ -12,6 +12,13 @@ class Node:
             self.label = label
 
 
+class Edge:
+
+    def __init__(self, i = None, j = None, score = None):
+            self.i = i
+            self.j = j
+            self.score = score
+
 class Layer:
 
     def __init__(self, number = None, name = None):

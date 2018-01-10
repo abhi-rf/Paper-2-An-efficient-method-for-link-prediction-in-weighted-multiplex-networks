@@ -1,7 +1,7 @@
 import networkx as nx
 from pprint import pprint
 import random
-from data_class import Node,Layer
+from data_class import Node,Layer,Edge
 
 node_path = "dataset/CS-Aarhus_nodes.txt"
 layer_path = "dataset/CS-Aarhus_layers.txt"
@@ -57,18 +57,55 @@ def create_graphs():
     return graphs
             
 
-#Algorithm 1                       
+#Algorithm 1          
+def likelihood(G,H):
+    GH = nx.intersection(G,H)
+    prob = len(GH.edges())
+    prob = prob/(len(H.edges()))
+    
+    
+def link_in_predictor_layer(j,layer):
+    if(j in layer.edges()):
+        return 1
+    else:
+        return 0
+    
+    
+             
 def assign_likelihood(graphs,target):
     predictor = []
     for i in range(len(graphs)):
         if(i!=target):
             predictor.append(graphs[i])
+   
+    weight = [0,0,0,0]
+    
+    for i in range(len(predictor)):
+        weight[i] = likelihood(target,predictor[i])
+        
+    U = []
+    for i in target.nodes():
+        for j in target.nodes():
+            if(i!=j):
+                edge_object = Edge(i,j,0)
+                e = tuple([edge_object.i,edge_object.j])
+                U.append(e)
+               
+                
+    for j in U:
+        if(j not in target.edges()):
+            j.score = 0
+            for i in len(predictor):
+                j.score = j.score + weight[i]*link_in_predictor_layer(tuple([j.i,j.j]),predictor[i])
+                
+                
     
 
 if __name__ == "__main__":
     
     empty_graph = add_nodes()
     graphs = create_graphs()
-    print(len(graphs[3].edges()))
+    print(type(list(graphs[3].edges())[1]))
+    print()
     
     
