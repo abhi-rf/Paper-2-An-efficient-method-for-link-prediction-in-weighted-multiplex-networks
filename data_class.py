@@ -18,6 +18,7 @@ class Edge:
             self.i = i
             self.j = j
             self.score = score
+            self.edge_tuple = tuple([i,j])
 
 class Layer:
 

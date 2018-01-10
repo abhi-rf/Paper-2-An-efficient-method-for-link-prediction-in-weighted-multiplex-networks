@@ -59,9 +59,12 @@ def create_graphs():
 
 #Algorithm 1          
 def likelihood(G,H):
-    GH = nx.intersection(G,H)
-    prob = len(GH.edges())
-    prob = prob/(len(H.edges()))
+    count = 0
+    for j in G.edges():
+        if(j in H.edges()):
+            count+=1
+    prob = count/(len(H.edges()))
+    return prob
     
     
 def link_in_predictor_layer(j,layer):
@@ -75,11 +78,11 @@ def link_in_predictor_layer(j,layer):
 def assign_likelihood(graphs,target):
     predictor = []
     for i in range(len(graphs)):
-        if(i!=target):
+        if(graphs[i]!=target):
             predictor.append(graphs[i])
    
     weight = [0,0,0,0]
-    
+    print(len(predictor))
     for i in range(len(predictor)):
         weight[i] = likelihood(target,predictor[i])
         
@@ -88,15 +91,14 @@ def assign_likelihood(graphs,target):
         for j in target.nodes():
             if(i!=j):
                 edge_object = Edge(i,j,0)
-                e = tuple([edge_object.i,edge_object.j])
-                U.append(e)
+                U.append(edge_object)
                
                 
     for j in U:
-        if(j not in target.edges()):
+        if(j.edge_tuple not in target.edges()):
             j.score = 0
-            for i in len(predictor):
-                j.score = j.score + weight[i]*link_in_predictor_layer(tuple([j.i,j.j]),predictor[i])
+            for i in range(len(predictor)):
+                j.score = j.score + weight[i]*link_in_predictor_layer(j.edge_tuple,predictor[i])
                 
                 
     
@@ -107,5 +109,6 @@ if __name__ == "__main__":
     graphs = create_graphs()
     print(type(list(graphs[3].edges())[1]))
     print()
+    assign_likelihood(graphs,graphs[1])
     
     
