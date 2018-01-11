@@ -22,6 +22,6 @@ class Edge:
 
 class Layer:
 
-    def __init__(self, number = None, name = None):
-            self.number = number
-            self.name = name
+    def __init__(self, graph, weight):
+            self.graph = graph
+            self.weight = weight
