@@ -20,6 +20,12 @@ class Edge:
             self.score = score
             self.edge_tuple = tuple([i,j])
 
+    def __str__(self):
+        return "%d --> %d : %.3f" % (self.i, self.j, self.score)
+
+    def __repr__(self):
+        return str(self)
+
 class Layer:
 
     def __init__(self, graph, weight):
