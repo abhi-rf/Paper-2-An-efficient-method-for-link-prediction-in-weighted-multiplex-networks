@@ -1,6 +1,7 @@
 import networkx as nx
 from pprint import pprint
 import random
+import operator
 from data_class import Node,Layer,Edge
 
 node_path = "dataset/CS-Aarhus_nodes.txt"
@@ -84,7 +85,7 @@ def layer_likelihood(target, predictor):
     count = 0
     for j in target.edges():
         (x, y) = j
-        if((x, y) in predictor.edges() or (y, x) in predictor.edges):
+        if((x, y) in predictor.edges() or (y, x) in predictor.edges()):
             count+=1
 
     prob = count/(len(predictor.edges()))
@@ -109,9 +110,9 @@ def calculate_edge_scores(target, predictors, missing_edges_list, missing_edges_
                     score += (score + (layer.weight * link_in_predictor_layer((x, y), layer.graph)))
 
                 if (x, y) in missing_edges_list or (y, x) in missing_edges_list:
-                    missing_edges_scores.append(Edge(x, y, score))
+                    missing_edges_scores.append(Edge(x, y, score, 1))
                 else:
-                    non_exist_scores.append(Edge(x, y, score))
+                    non_exist_scores.append(Edge(x, y, score, 0))
 
 def link_in_predictor_layer(edge, layer_graph):
     (x, y) = edge
@@ -120,34 +121,70 @@ def link_in_predictor_layer(edge, layer_graph):
     else:
         return 0
 
+def calculate_auc(n, missing_edges_scores, non_exist_scores):
+    beta = 0
+    gamma = 0
 
+    missing_len = len(missing_edges_scores) - 1
+    non_exist_len = len(non_exist_scores) - 1
+
+    for i in range(int(n)):
+        missing_index = random.randint(0, missing_len)
+        non_exist_index = random.randint(0, non_exist_len)
+
+        missing_score = missing_edges_scores[missing_index].score
+        non_exist_score = non_exist_scores[non_exist_index].score
+
+        if missing_score > non_exist_score:
+            beta += 1
+        elif missing_score == non_exist_score:
+            gamma += 1
+
+    # Note gamma was multiplied by 0.5 because of the previous paper.
+    # Note multiplying by 0.5 unusually high auc
+    return (beta + (0.5) * gamma) / n
+
+
+def calculate_precision(delta, missing_edges_scores, non_exist_scores):
+    merged_list = missing_edges_scores + non_exist_scores
+    merged_list.sort(key = operator.attrgetter('score', 'isMissing'), reverse = True)
+
+    epsilon = 0
+
+    for i in range(int(delta)):
+        if merged_list[i] in missing_edges_scores:
+            epsilon += 1
+
+    return epsilon / delta
 
 
 if __name__ == "__main__":
 
-    target_index = 1
-    empty_graph = add_nodes()
-    graphs = create_graphs()
+    for target_index in range(5):
+        empty_graph = add_nodes()
+        graphs = create_graphs()
 
-    target = graphs.pop(target_index)
-    pprint(graphs)
+        target = graphs.pop(target_index)
+        # pprint(graphs)
 
-    pprint(len(target.edges()))
-    missing_edges_list = remove_edges(target, len(target.edges()) / 10)
-    pprint(len(target.edges()))
+        predictors = get_predictors(graphs)
 
-    predictors = get_predictors(graphs)
+        for layer in predictors:
+            layer.weight = layer_likelihood(target, layer.graph)
 
-    for layer in predictors:
-        layer.weight = layer_likelihood(target, layer.graph)
+        # pprint(len(target.edges()))
+        missing_edges_list = remove_edges(target, len(target.edges()) / 10)
+        # pprint(len(target.edges()))
 
-    missing_edges_scores = []
-    non_exist_scores = []
+        missing_edges_scores = []
+        non_exist_scores = []
 
-    calculate_edge_scores(target, predictors, missing_edges_list, missing_edges_scores, non_exist_scores)
+        calculate_edge_scores(target, predictors, missing_edges_list, missing_edges_scores, non_exist_scores)
 
-    pprint(missing_edges_scores)
-    pprint(non_exist_scores)
+        # pprint(missing_edges_scores)
+        # pprint(non_exist_scores)
 
-    # pprint(missing_edges_list)
-    # assign_likelihood(graphs, graphs[target_index], missing_edges_list)
+        auc = calculate_auc(1000, missing_edges_scores, non_exist_scores)
+        precision = calculate_precision(20, missing_edges_scores, non_exist_scores)
+
+        print("Layer %d : \n\tAUC : %.3f\n\tPre : %.3f" %(target_index + 1, auc, precision))

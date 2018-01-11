@@ -14,14 +14,15 @@ class Node:
 
 class Edge:
 
-    def __init__(self, i = None, j = None, score = None):
+    def __init__(self, i = None, j = None, score = None, isMissing = 1):
             self.i = i
             self.j = j
             self.score = score
             self.edge_tuple = tuple([i,j])
+            self.isMissing = isMissing
 
     def __str__(self):
-        return "%d --> %d : %.3f" % (self.i, self.j, self.score)
+        return "%d --> %d : %.3f -- %d" % (self.i, self.j, self.score, self.isMissing)
 
     def __repr__(self):
         return str(self)
