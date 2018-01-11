@@ -56,6 +56,13 @@ def create_graphs():
 
     return graphs
 
+def get_predictors(graphs):
+    predictors = []
+    for graph in graphs:
+        predictors.append(Layer(graph, 0))
+
+    return predictors
+
 def remove_edges(graph, n):
     missing_edges_list = []
     edges_list = list(graph.edges())
@@ -73,7 +80,7 @@ def remove_edges(graph, n):
 
     return missing_edges_list
 
-def likelihood(target, predictor):
+def layer_likelihood(target, predictor):
     count = 0
     for j in target.edges():
         (x, y) = j
@@ -83,41 +90,35 @@ def likelihood(target, predictor):
     prob = count/(len(predictor.edges()))
     return prob
 
+def calculate_edge_scores(target, predictors, missing_edges_list, missing_edges_scores, non_exist_scores):
+    node_list = list(target.nodes())
+    node_len = len(node_list)
+    edges_list = list(target.edges())
 
-def link_in_predictor_layer(edge, layer):
+    # pprint(edges_list)
+
+
+    for i in range(0, node_len - 1):
+        for j in range(i, node_len - 1):
+            x = node_list[i]
+            y = node_list[j]
+
+            if (x, y) not in edges_list and (y, x) not in edges_list:
+                score = 0
+                for layer in predictors:
+                    score += (score + (layer.weight * link_in_predictor_layer((x, y), layer.graph)))
+
+                if (x, y) in missing_edges_list or (y, x) in missing_edges_list:
+                    missing_edges_scores.append(Edge(x, y, score))
+                else:
+                    non_exist_scores.append(Edge(x, y, score))
+
+def link_in_predictor_layer(edge, layer_graph):
     (x, y) = edge
-    if((x, y) in layer.edges() or (y, x) in layer.edges()):
+    if((x, y) in layer_graph.edges() or (y, x) in layer_graph.edges()):
         return 1
     else:
         return 0
-
-
-
-def assign_likelihood(graphs, target, missing_edges_list):
-    predictor = []
-    for i in range(len(graphs)):
-        if(graphs[i]!=target):
-            predictor.append(Layer(graphs[i], 0))
-
-    for i in range(len(predictor)):
-        predictor[i].weight = likelihood(target,predictor[i].graph)
-
-    nodes_list = list(target.nodes())
-
-    U = []
-    for i in len(nodes_list):
-        for j in (i + 1, len(nodes_list)):
-            x = nodes_list[i]
-            y = nodes_list[j]
-            edge_object = Edge(i,j,0)
-            U.append(edge_object)
-
-
-    for j in U:
-        if(j.edge_tuple not in target.edges()):
-            j.score = 0
-            for i in range(len(predictor)):
-                j.score = j.score + weight[i]*link_in_predictor_layer(j.edge_tuple,predictor[i])
 
 
 
@@ -127,8 +128,26 @@ if __name__ == "__main__":
     target_index = 1
     empty_graph = add_nodes()
     graphs = create_graphs()
-    pprint(len(graphs[target_index].edges()))
-    missing_edges_list = remove_edges(graphs[target_index], len(graphs[target_index].edges()) / 10)
-    pprint(len(graphs[target_index].edges()))
-    pprint(missing_edges_list)
-    # assign_likelihood(graphs, graphs[target_index])
+
+    target = graphs.pop(target_index)
+    pprint(graphs)
+
+    pprint(len(target.edges()))
+    missing_edges_list = remove_edges(target, len(target.edges()) / 10)
+    pprint(len(target.edges()))
+
+    predictors = get_predictors(graphs)
+
+    for layer in predictors:
+        layer.weight = layer_likelihood(target, layer.graph)
+
+    missing_edges_scores = []
+    non_exist_scores = []
+
+    calculate_edge_scores(target, predictors, missing_edges_list, missing_edges_scores, non_exist_scores)
+
+    pprint(missing_edges_scores)
+    pprint(non_exist_scores)
+
+    # pprint(missing_edges_list)
+    # assign_likelihood(graphs, graphs[target_index], missing_edges_list)
